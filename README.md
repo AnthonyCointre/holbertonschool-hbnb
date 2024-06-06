@@ -2,7 +2,7 @@
 Welcome to the first leg of our exciting journey - creating our very own web application, HBnB Evolution, modeled after AirBnB using Python and Flask!
 
 
-# What’s Cooking in Part 1?
+## What’s Cooking in Part 1?
 1. Sketching with UML: You’ll kick things off by drawing out the backbone of our application using UML (Unified Modeling Language). Think of it like creating the architectural blueprint for a building. It’s where you decide how your classes and components will interact.
 
 2. Testing Our Logic: After setting up our blueprint, it’s time to make sure everything works as planned. You’ll create tests for the API and business logic. It’s like making sure all the gears turn smoothly in a machine.
@@ -14,7 +14,7 @@ Welcome to the first leg of our exciting journey - creating our very own web app
 5. Packaging with Docker: Finally, you’ll wrap everything up in a neat Docker image. It’s like packing your app in a container that can be easily moved and deployed anywhere.
 
 
-# The Three Layers of Our API Cake:
+## The Three Layers of Our API Cake:
 - Services Layer: This is where our API greets the world. It handles all the requests and responses.
 - Business Logic Layer: The brain of the operation. This is where all the processing and decision-making happens.
 - Persistence Layer: For now, it’s our humble file system, but we’ll graduate to a database in the future.
@@ -32,7 +32,7 @@ Welcome to the first leg of our exciting journey - creating our very own web app
 5. Country and City: Every place is tied to a city, and each city belongs to a country. This is important for categorizing and searching places.
 
 
-# Business Logic: Rules to Live By
+## Business Logic: Rules to Live By
 1. Unique Users: Each user is unique and identified by their email.
 
 2. One Host per Place: Every place must have exactly one host.
