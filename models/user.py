@@ -19,6 +19,6 @@ def add_place(self, place_id):
         self.places.append(place_id)
 
 
-def _repr_(self):
+def __repr__(self):
     """String representation of the user"""
     return f"user {self.id} {self.email} {self.first_name} {self.last_name}"
