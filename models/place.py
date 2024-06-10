@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+from models.base_model import BaseModel
 
-class place:
+
+class place(BaseModel):
     """class that inherits from BaseModel"""
 
     def _init_(self, place_id="", place_name="", place_description="", place_address="", place_city="", place_country="", place_owner_id=""):
@@ -24,6 +26,6 @@ def add_amenity(self, amenity):
     self.amenities.append(amenity)
 
 
-def _repr_(self):
+def __repr__(self):
     """String representation of the place"""
     return f"place {self.id} {self.name} {self.description} {self.address} {self.city} {self.country} {self.owner_id}"

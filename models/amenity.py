@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+from models.base_model import BaseModel
 
-class Amenity:
+
+class Amenity(BaseModel):
     """class that inherits from BaseModel"""
 
     def __init__(self, amenity_id="", amenity_name=""):

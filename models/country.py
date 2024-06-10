@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+from models.base_model import BaseModel
 
-class country(base_model):
+
+class country(BaseModel):
     """class that inherits from BaseModel"""
     def __init__(self, country_id="", country_name=""):
         self.id = country_id
