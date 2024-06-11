@@ -1,24 +1,35 @@
 #!/usr/bin/env python3
+
 from models.base_model import BaseModel
 
 
-class user(BaseModel):
-    """class that inherits from BaseModel"""
+class User(BaseModel):
+    """
+    Classe User qui hérite de BaseModel.
+    """
 
+    def __init__(self, id, user_first_name="", user_last_name="", user_email=""):
+        """
+        Initialise une nouvelle instance de User.
+        """
 
-def _init_(self, user_first_name="", user_last_name="", user_email=""):
+        super().__init__(id)
+        self.email = user_email
+        self.first_name = user_first_name
+        self.last_name = user_last_name
+        self.places = []
 
-    self.email = user_email
-    self.first_name = user_first_name
-    self.last_name = user_last_name
+    def add_place(self, place_id):
+        """
+        Ajoute un lieu à la liste des lieux associés à l'utilisateur.
+        """
 
+        if place_id not in self.places:
+            self.places.append(place_id)
 
-def add_place(self, place_id):
-    """Add a place to the user"""
-    if place_id not in self.places:
-        self.places.append(place_id)
+    def __repr__(self):
+        """
+        Retourne une représentation sous forme de chaîne de caractères de l'utilisateur.
+        """
 
-
-def __repr__(self):
-    """String representation of the user"""
-    return f"user {self.id} {self.email} {self.first_name} {self.last_name}"
+        return f"User {self.id} {self.email} {self.first_name} {self.last_name}"
