@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
+
 from models.base_model import BaseModel
 
 
-class place(BaseModel):
-    """class that inherits from BaseModel"""
+class Place(BaseModel):
+    """
+    Classe Place qui hérite de BaseModel.
+    """
 
-    def _init_(self, place_id="", place_name="", place_description="", place_address="", place_city="", place_country="", place_owner_id=""):
+    def __init__(self, place_id="", place_name="", place_description="", place_address="", place_city="", place_country="", place_owner_id=""):
+        """
+        Initialise une nouvelle instance de Place.
+        """
 
+        super().__init__(place_id)
         self.id = place_id
         self.name = place_name
         self.description = place_description
@@ -14,18 +21,26 @@ class place(BaseModel):
         self.city = place_city
         self.country = place_country
         self.owner_id = place_owner_id
+        self.reviews = []
+        self.amenities = []
 
+    def add_review(self, review):
+        """
+        Ajoute un avis à la liste des avis.
+        """
 
-def add_review(self, review):
-    """Add a review to the place"""
-    self.reviews.append(review)
+        self.reviews.append(review)
 
+    def add_amenity(self, amenity):
+        """
+        Ajoute une commodité à la liste des commodités.
+        """
 
-def add_amenity(self, amenity):
-    """Add an amenity to the place"""
-    self.amenities.append(amenity)
+        self.amenities.append(amenity)
 
+    def __repr__(self):
+        """
+        Retourne une représentation sous forme de chaîne de caractères du lieu.
+        """
 
-def __repr__(self):
-    """String representation of the place"""
-    return f"place {self.id} {self.name} {self.description} {self.address} {self.city} {self.country} {self.owner_id}"
+        return f"Place {self.id} {self.name} {self.description} {self.address} {self.city} {self.country} {self.owner_id}"
