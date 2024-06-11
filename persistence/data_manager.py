@@ -6,54 +6,54 @@ from persistence.ipersistence_manager import IPersistenceManager
 
 class DataManager(IPersistenceManager):
     """
-    DataManager class implements the IPersistenceManager interface and provides methods for managing data.
+    La classe DataManager implémente l'interface IPersistenceManager et fournit des méthodes pour gérer les données.
     """
 
     def __init__(self):
         """
-        Initializes the DataManager object.
+        Initialise l'objet DataManager.
         """
 
         super().__init__()
 
     def get(self, cls: Type[Any], id: Any) -> Any:
         """
-        Retrieves an object of the specified class with the given id.
+        Récupère un objet de la classe spécifiée avec l'identifiant donné.
         """
 
         pass
 
     def get_all(self, cls: Type[Any]) -> List[Any]:
         """
-        Retrieves all objects of the specified class.
+        Récupère tous les objets de la classe spécifiée.
         """
 
         pass
 
     def save(self):
         """
-        Saves changes to the data.
+        Enregistre les modifications apportées aux données.
         """
 
         pass
 
     def delete(self, obj: Any = None) -> None:
         """
-        Deletes the specified object or all objects if no argument is provided.
+        Supprime l'objet spécifié ou tous les objets si aucun argument n'est fourni.
         """
 
         pass
 
     def reload(self):
         """
-        Reloads the data.
+        Recharge les données.
         """
 
         pass
 
     def close(self):
         """
-        Closes the data manager.
+        Ferme le gestionnaire de données.
         """
 
         pass
