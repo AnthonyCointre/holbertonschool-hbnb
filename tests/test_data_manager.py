@@ -3,34 +3,60 @@
 import unittest
 import sys
 import os
-from typing import List, Type, Any
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from typing import List, Type, Any
 from persistence.data_manager import DataManager
 
+
 class TestDataManager(unittest.TestCase):
+    """
+    La classe de test TestDataManager teste les méthodes de la classe DataManager.
+    """
+
     def setUp(self):
-        """sets uo the test case environment"""
+        """
+        Méthode de configuration exécutée avant chaque test.
+        """
+
         self.data_manager = DataManager()
         
     def test_get(self):
-        """ Test the method get"""
-        self.assertIsNone(self.data_manager.get(Any, 1))
+        """
+        Teste la méthode get de DataManager.
+        """
+
+        self.assertIsNone(self.data_manager.get(Type[Any], 1))
         
     def test_get_all(self):
-        """Test the get all method"""
-        self.assertIsNone(self.data_manager.get_all(Any), List)
+        """
+        Teste la méthode get_all de DataManager.
+        """
+
+        self.assertIsNone(self.data_manager.get_all(Type[Any]), List)
     
     def test_save(self):
-        """Test the save method"""
+        """
+        Teste la méthode save de DataManager.
+        """
+
         self.assertIsNone(self.data_manager.save())
         
     def test_delete(self):
-        """Test the delete method"""
+        """
+        Teste la méthode delete de DataManager.
+        """
+
         self.assertIsNone(self.data_manager.delete())
         
     def test_close(self):
-        """Test the close method"""
+        """
+        Teste la méthode close de DataManager.
+        """
+
         self.assertIsNone(self.data_manager.close())
-        
+
+
 if __name__ == '__main__':
     unittest.main()
