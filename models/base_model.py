@@ -1,19 +1,38 @@
 #!/usr/bin/env python3
 
+
 class BaseModel:
-    def __init__(self, id,  name="", date_creation=""):
+    """
+    Classe de base pour modéliser les entités communes.
+    """
+
+    def __init__(self, id, name="", date_creation=""):
+        """
+        Initialise une nouvelle instance de BaseModel.
+        """
+
         self.id = id
         self.name = name
         self.date_creation = date_creation
 
     def print(self):
-        print(f"id: {self.id}, name: {
-              self.name}, date_creation: {self.date_creation}")
+        """
+        Affiche les attributs de l'entité sous forme de chaîne de caractères.
+        """
+
+        print(f"id: {self.id}, name: {self.name}, date_creation: {self.date_creation}")
 
     def save(self):
-        """save obj in datat base"""
+        """
+        Simule la sauvegarde de l'entité dans une base de données.
+        """
+
         print("save")
 
     def delete(self):
-        """delete object in data base"""
+        """
+        Simule la suppression de l'entité dans une base de données.
+
+        """
+
         print("delete")
