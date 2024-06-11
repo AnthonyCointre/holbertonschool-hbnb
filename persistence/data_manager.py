@@ -3,7 +3,6 @@
 from typing import List, Type, Any
 from persistence.ipersistence_manager import IPersistenceManager
 
-
 class DataManager(IPersistenceManager):
     """
     La classe DataManager implémente l'interface IPersistenceManager et fournit des méthodes pour gérer les données.
@@ -47,6 +46,13 @@ class DataManager(IPersistenceManager):
     def reload(self):
         """
         Recharge les données.
+        """
+
+        pass
+
+    def update(self, obj: Any):
+        """
+        Met à jour l'objet spécifié.
         """
 
         pass
