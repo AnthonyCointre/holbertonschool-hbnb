@@ -9,17 +9,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from models.base_model import BaseModel
 from models.place import Place
 
+
 class TestPlace(unittest.TestCase):
     """
     Classe de tests pour la classe Place.
     Utilise le framework de tests unitaires unittest.
     """
-    
+
     def setUp(self):
         """
         Configure une instance de Place avant chaque test.
         """
-        
+
         self.place = Place(place_id="1", place_name="Eiffel Tower", place_description="Famous landmark in Paris",
                            place_address="Champ de Mars, 5 Avenue Anatole France", place_city="Paris", place_country="France", place_owner_id="owner_1")
 
@@ -42,7 +43,7 @@ class TestPlace(unittest.TestCase):
         """
         Teste la méthode add_review pour ajouter des avis au lieu.
         """
-        
+
         self.place.add_review("Amazing place!")
         self.assertIn("Amazing place!", self.place.reviews)
         self.place.add_review("Must visit!")
