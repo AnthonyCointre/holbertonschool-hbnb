@@ -8,13 +8,13 @@ T = TypeVar('T')
 
 class IPersistenceManager(ABC, Generic[T]):
     """
-    IPersistenceManager is an abstract base class defining methods for persistence management.
+    IPersistenceManager est une classe de base abstraite définissant des méthodes pour la gestion de la persistance.
     """
 
     @abstractmethod
     def get(self, cls, id) -> T:
         """
-        Retrieves an object of the specified class with the given id.
+        Récupère un objet de la classe spécifiée avec l'identifiant donné.
         """
 
         pass
@@ -22,7 +22,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def get_all(self, cls) -> List[T]:
         """
-        Retrieves all objects of the specified class.
+        Récupère tous les objets de la classe spécifiée.
         """
 
         pass
@@ -30,7 +30,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def save(self) -> None:
         """
-        Saves changes to the data.
+        Enregistre les modifications apportées aux données.
         """
 
         pass
@@ -38,7 +38,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def delete(self, obj=None) -> None:
         """
-        Deletes the specified object or all objects if no argument is provided.
+        Supprime l'objet spécifié ou tous les objets si aucun argument n'est fourni.
         """
 
         pass
@@ -46,7 +46,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def reload(self) -> None:
         """
-        Reloads the data.
+        Recharge les données.
         """
 
         pass
@@ -54,7 +54,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def close(self) -> None:
         """
-        Closes the persistence manager.
+        Ferme le gestionnaire de persistance.
         """
 
         pass
@@ -62,7 +62,7 @@ class IPersistenceManager(ABC, Generic[T]):
     @abstractmethod
     def update(self, obj) -> None:
         """
-        Updates the specified object.
+        Met à jour l'objet spécifié.
         """
 
         pass
