@@ -1,15 +1,25 @@
 #!/usr/bin/env python3
+
 from models.base_model import BaseModel
 
 
 class Amenity(BaseModel):
-    """class that inherits from BaseModel"""
+    """
+    Classe Amenity qui hérite de BaseModel.
+    """
 
     def __init__(self, amenity_id="", amenity_name=""):
+        """
+        Initialise une nouvelle instance de Amenity.
+        """
 
+        super().__init__(amenity_id)
         self.id = amenity_id
         self.name = amenity_name
 
     def __repr__(self):
-        """String representation of the amenity"""
+        """
+        Retourne une représentation sous forme de chaîne de caractères de l'agrément.
+        """
+
         return f"amenity {self.id} {self.name}"
