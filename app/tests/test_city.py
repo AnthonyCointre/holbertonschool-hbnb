@@ -2,9 +2,8 @@
 
 import unittest
 import sys
-import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append("..")
 
 from models.base_model import BaseModel
 from models.city import City, CityCollection
