@@ -5,22 +5,35 @@ from flask_restful import Resource, Api
 from app.models.country import Country
 
 
-class CountryList(Resource):
-    def __init__(self):
-        """pre-load some countries"""
-        self.countries = [
-            Country(country_id="US", name="United States").save(),
-            Country(country_id="FR", name="France").save()
+class CountryList:
+    def __init__(self, country_id, name):
+        self.country_id = country_id
+        self.name = name
+
+    @classmethod
+    def get(cls, country_code):
+        # Placeholder for actual data retrieval logic
+        if country_code == "US":
+            return cls(country_id="US", name="United States")
+        elif country_code == "CA":
+            return cls(country_id="CA", name="Canada")
+        return None
+
+    @classmethod
+    def get_all(cls):
+        # Placeholder for actual data retrieval logic
+        return [
+            cls(country_id="US", name="United States"),
+            cls(country_id="CA", name="Canada"),
         ]
 
-    def get(self):
-        """get all countries"""
-        return jsonify([country.to_dict() for country in self.countries])
-
-    def get(self, country_code):
-        """get a country by country code"""
-        country = Country.get(country_code)
-        if country is not None:
-            return jsonify(country.to_dict())
+class CountryResource(Resource):
+    def get(self, country_code=None):
+        if country_code:
+            country = CountryList.get(country_code)
+            if country:
+                return {'country_id': country.country_id, 'name': country.name}, 200
+            return {'error': 'Country not found'}, 404
         else:
-            return jsonify({"error": "Country not found"}), 404
+            countries = CountryList.get_all()
+            return [{'country_id': country.country_id, 'name': country.name} for country in countries], 200
