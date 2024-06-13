@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 import unittest
-import sys
-sys.path.append("..")
-from models.base_model import BaseModel
-from models.amenity import Amenity
+from app.models.base_model import BaseModel
+from app.models.amenity import Amenity
 
 
 class TestAmenity(unittest.TestCase):

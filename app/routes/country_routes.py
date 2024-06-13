@@ -2,7 +2,7 @@
 
 from flask import jsonify, request, Flask
 from flask_restful import Resource, Api
-from models.country import Country
+from app.models.country import Country
 
 
 class CountryList(Resource):

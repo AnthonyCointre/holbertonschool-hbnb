@@ -2,9 +2,7 @@
 
 import unittest
 import json
-import sys
-sys.path.append("..")
-from routes.user_routes import user_bp
+from app.routes.user_routes import user_bp
 from flask import Flask
 
 class UserRoutesTestCase(unittest.TestCase):

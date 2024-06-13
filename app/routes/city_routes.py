@@ -2,8 +2,8 @@
 
 from flask import jsonify, request, Flask
 from flask_restful import Resource, Api
-from models.city import City
-from models.country import Country
+from app.models.city import City
+from app.models.country import Country
 
 
 class cityCollectionResource(Resource):

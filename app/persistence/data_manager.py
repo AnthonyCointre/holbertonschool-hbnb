@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from typing import List, Type, Any
-from persistence.ipersistence_manager import IPersistenceManager
+from app.persistence.ipersistence_manager import IPersistenceManager
 
 class DataManager(IPersistenceManager):
     """

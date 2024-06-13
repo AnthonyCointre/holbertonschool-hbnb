@@ -5,9 +5,7 @@ from datetime import datetime
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_restx import Api, fields, Namespace
-import sys
-sys.path.append("..")
-from routes.amenity_routes import app, amenities_db, next_id, AmenityList, AmenityDetail
+from app.routes.amenity_routes import app, amenities_db, next_id, AmenityList, AmenityDetail
 
 class TestAmenityRoutes(unittest.TestCase):
 

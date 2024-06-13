@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 import unittest
-import sys
-sys.path.append("..")
-from models.base_model import BaseModel
-from models.user import User
+from app.models.base_model import BaseModel
+from app.models.user import User
 
 
 class TestUser(unittest.TestCase):

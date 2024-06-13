@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 import unittest
-import sys
-sys.path.append("..")
 from typing import List, Type, Any
-from persistence.data_manager import DataManager
+from app.persistence.data_manager import DataManager
 
 
 class TestDataManager(unittest.TestCase):
