@@ -1,127 +1,89 @@
 #!/usr/bin/env python3
 
-from flask import Blueprint, request, jsonify, abort
-from uuid import uuid4
-from datetime import datetime
+from flask import Blueprint, request, jsonify
+from flask_restx import Api, Resource, fields
 import re
-import json
 
-user_blueprint = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__)
+api = Api(user_bp, doc='/docs')
 
 users = {}
+user_id_counter = 1
 
-def save_users_to_file():
-    with open('users.json', 'w') as file:
-        json.dump(users, file)
+user_model = api.model('User', {
+    'id': fields.Integer(readOnly=True, description='The unique identifier of a user'),
+    'email': fields.String(required=True, description='The email address of the user'),
+    'first_name': fields.String(required=True, description='The first name of the user'),
+    'last_name': fields.String(required=True, description='The last name of the user')
+})
 
-def load_users_from_file():
-    global users
-    try:
-        with open('users.json', 'r') as file:
-            users = json.load(file)
-    except FileNotFoundError:
-        users = {}
+email_regex = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
 
-class User:
-    def __init__(self, email, first_name, last_name):
-        self.id = str(uuid4())
-        self.email = email
-        self.first_name = first_name
-        self.last_name = last_name
-        self.created_at = datetime.now().isoformat()
-        self.updated_at = self.created_at
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
+def is_valid_email(email):
+    return re.match(email_regex, email) is not None
+
+
+@api.route('/users')
+class UserList(Resource):
+    @api.marshal_list_with(user_model)
+    def get(self):
+        return list(users.values()), 200
+
+    @api.expect(user_model)
+    def post(self):
+        global user_id_counter
+        data = request.json
+        if not is_valid_email(data.get('email', '')):
+            return {'message': 'Invalid email format'}, 400
+        if any(user['email'] == data['email'] for user in users.values()):
+            return {'message': 'Email already exists'}, 409
+        if not data.get('first_name') or not data.get('last_name'):
+            return {'message': 'First name and last name are required'}, 400
+
+        user_id = user_id_counter
+        user_id_counter += 1
+        user = {
+            'id': user_id,
+            'email': data['email'],
+            'first_name': data['first_name'],
+            'last_name': data['last_name']
         }
+        users[user_id] = user
+        return user, 201
 
-    def update(self, email=None, first_name=None, last_name=None):
-        if email:
-            self.email = email
-        if first_name:
-            self.first_name = first_name
-        if last_name:
-            self.last_name = last_name
-        self.updated_at = datetime.now().isoformat()
 
-def validate_email(email):
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_regex, email):
-        abort(400, description="Invalid email format.")
+@api.route('/users/<int:user_id>')
+class User(Resource):
+    @api.marshal_with(user_model)
+    def get(self, user_id):
+        user = users.get(user_id)
+        if user is None:
+            return {'message': 'User not found'}, 404
+        return user
 
-def validate_user_data(data):
-    if not data or 'email' not in data or 'first_name' not in data or 'last_name' not in data:
-        abort(400, description="Missing required fields.")
-    validate_email(data['email'])
-    if not data['first_name'] or not isinstance(data['first_name'], str):
-        abort(400, description="Invalid first name.")
-    if not data['last_name'] or not isinstance(data['last_name'], str):
-        abort(400, description="Invalid last name.")
+    @api.expect(user_model)
+    def put(self, user_id):
+        data = request.json
+        user = users.get(user_id)
+        if user is None:
+            return {'message': 'User not found'}, 404
+        if not is_valid_email(data.get('email', '')):
+            return {'message': 'Invalid email format'}, 400
+        if any(u['email'] == data['email'] and u['id'] != user_id for u in users.values()):
+            return {'message': 'Email already exists'}, 409
+        if not data.get('first_name') or not data.get('last_name'):
+            return {'message': 'First name and last name are required'}, 400
 
-def add_user(user):
-    if user.email in [u['email'] for u in users.values()]:
-        abort(409, description="Email already exists.")
-    users[user.id] = user.to_dict()
-    save_users_to_file()
+        user.update({
+            'email': data['email'],
+            'first_name': data['first_name'],
+            'last_name': data['last_name']
+        })
+        return user
 
-def get_user(user_id):
-    return users.get(user_id)
-
-def update_user(user_id, data):
-    user = users.get(user_id)
-    if user:
-        if 'email' in data and data['email'] != user['email']:
-            if data['email'] in [u['email'] for u in users.values()]:
-                abort(409, description="Email already exists.")
-        user_obj = User(**user)
-        user_obj.update(**data)
-        users[user_id] = user_obj.to_dict()
-        save_users_to_file()
-        return user_obj.to_dict()
-    else:
-        abort(404, description="User not found.")
-
-def delete_user(user_id):
-    if user_id in users:
+    def delete(self, user_id):
+        if user_id not in users:
+            return {'message': 'User not found'}, 404
         del users[user_id]
-        save_users_to_file()
-    else:
-        abort(404, description="User not found.")
-
-@user_blueprint.route('', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    validate_user_data(data)
-    user = User(data['email'], data['first_name'], data['last_name'])
-    add_user(user)
-    return jsonify(user.to_dict()), 201
-
-@user_blueprint.route('', methods=['GET'])
-def get_users():
-    return jsonify(list(users.values())), 200
-
-@user_blueprint.route('/<user_id>', methods=['GET'])
-def get_user_by_id(user_id):
-    user = get_user(user_id)
-    if user:
-        return jsonify(user), 200
-    else:
-        abort(404, description="User not found.")
-
-@user_blueprint.route('/<user_id>', methods=['PUT'])
-def update_user_by_id(user_id):
-    data = request.get_json()
-    validate_user_data(data)
-    updated_user = update_user(user_id, data)
-    return jsonify(updated_user), 200
-
-@user_blueprint.route('/<user_id>', methods=['DELETE'])
-def delete_user_by_id(user_id):
-    delete_user(user_id)
-    return '', 204
+        return '', 204
