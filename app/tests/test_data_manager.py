@@ -2,9 +2,7 @@
 
 import unittest
 import sys
-
 sys.path.append("..")
-
 from typing import List, Type, Any
 from persistence.data_manager import DataManager
 
