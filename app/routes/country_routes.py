@@ -17,7 +17,7 @@ class CountryList(Resource):
         """get all countries"""
         return jsonify([country.to_dict() for country in self.countries])
 
-    def get(self.country_code):
+    def get(self, country_code):
         """get a country by country code"""
         country = Country.get(country_code)
         if country is not None:
