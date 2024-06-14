@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, request, Flask
-from flask_restful import Resource, Api
-from app.models.city import City
+from flask import jsonify, request
+from flask_restful import Resource
+from app.models.city import City, CityCollection
 from app.models.country import Country
 
 
@@ -19,7 +19,7 @@ class cityCollectionResource(Resource):
     def get(self):
         """  Get all cities"""
         return jsonify([city.to_dict() for city in self.city_collection.cities])
-
+    
     def post(self):
         """Add a new city"""
         data = request.get_json()
@@ -31,7 +31,6 @@ class cityCollectionResource(Resource):
             "name"), city_country=country_code)
         self.city_collection.add(new_city)
         return {"message": "City added successfully"}, 201
-
 
 class cityResource(Resource):
     def __init__(self):

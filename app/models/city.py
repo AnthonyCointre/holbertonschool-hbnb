@@ -24,7 +24,16 @@ class City(BaseModel):
         """
 
         return f"city {self.id} {self.name} {self.country}"
+    def to_dict(self):
+        """
+        Renvoie un dictionnaire contenant une représentation de la ville.
+        """
 
+        return {
+            "id": self.id,
+            "name": self.name,
+            "country": self.country
+        }
 
 class CityCollection:
     """
@@ -38,9 +47,32 @@ class CityCollection:
 
         self.cities = []
 
-    def add(self, city):
+    def add_city(self, city):
         """
         Ajoute une ville à la collection.
         """
 
         self.cities.append(city)
+    
+    def get_city(self, city_id):
+        """
+        Récupère une ville par son identifiant.
+        """
+        for city in self.cities:
+            if city.id == city_id:
+                return city
+        return None
+
+    def update_city(self, city_id, city_name):
+        """ update city name """
+        for city in self.cities:
+            if city.id == city_id:
+                city.name = city_name
+                return city
+    def delete_city(self, city_id):
+        """ delete city """
+        for city in self.cities:
+            if city.id == city_id:
+                self.cities.remove(city)
+                return True
+        return False
