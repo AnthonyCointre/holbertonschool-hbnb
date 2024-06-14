@@ -27,6 +27,10 @@ place_model = api.model('Place', {
 
 @app.route('/places/', methods=['POST'])
 def create_place():
+    """
+    Endpoint pour créer un nouveau lieu à partir des données JSON reçues.
+    """
+
     data = request.json
     new_place = {
         'id': str(len(places) + 1),
