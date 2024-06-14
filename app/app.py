@@ -1,57 +1,63 @@
 #!/usr/bin/env python3
 
-from flask import Flask, send_from_directory
-from flask_restx import Api
-from flask_swagger_ui import get_swaggerui_blueprint
-from persistence.data_manager import DataManager
-from api.amenity_route import amenity_bp
-from api.city_route import city_bp
-from api.place_route import place_bp
-from api.country_route import country_bp
-from api.user_route import user_bp
-from api.review_route import review_bp
-import os
+from app.models.user import User
+from app.models.place import Place
+from app.models.review import Review
+from app.models.amenity import Amenity
+from app.models.city import City
+from app.models.country import Country
 
-app = Flask(__name__)
+from app.persistence.data_manager import DataManager
 
-SWAGGER_URL = '/api/docs'
-API_URL = ' /swagger.yaml'
 
-SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={
-        'app_name': "HBNB API"
-    }
-)
-app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+def main():
+    # Initialize DataManager
+    data_manager = DataManager()
 
-@app.route('/swagger.yaml')
-def serve_swagger():
-    return send_from_directory(os.getcwd(), 'swagger.yaml')
+    # Create entities
+    user1 = User("user1@example.com", "password123", "John", "Doe")
+    place1 = Place("Cozy House", "A beautiful house in the countryside",
+                   "123 Green St", "Springfield", 42.35, -71.05, 3, 2, 100, 6)
+    review1 = Review(user_id=user1.id, place_id=place1.id,
+                     rating=4, comment="Great place to stay!")
+    amenity1 = Amenity("Wi-Fi")
+    city1 = City("Springfield")
+    country1 = Country("USA")
 
-"""initialize the data manager"""
-data_manager_users = DataManager("data/data_users.json")
-data_manager_reviews = DataManager("data/data_reviews.json")
-data_manager_places = DataManager("data/data_place.json")
-data_manager_countries = DataManager("data/data_countries.json")
-data_manager_cities = DataManager("data/data_cities.json")
-data_manager_amenities = DataManager("data/data_amenities.json")
+    # Save entities
+    data_manager.save(user1)
+    data_manager.save(place1)
+    data_manager.save(review1)
+    data_manager.save(amenity1)
+    data_manager.save(city1)
+    data_manager.save(country1)
 
-"""initialize the blueprints"""
-app.config['DATA_MANAGER_USERS'] = data_manager_users
-app.config['DATA_MANAGER_REVIEWS'] = data_manager_reviews
-app.config['DATA_MANAGER_PLACES'] = data_manager_places
-app.config['DATA_MANAGER_COUNTRIES'] = data_manager_countries
-app.config['DATA_MANAGER_CITIES'] = data_manager_cities
-app.config['DATA_MANAGER_AMENITIES'] = data_manager_amenities
+    # Retrieve entities
+    retrieved_user = data_manager.get(user1.id, type(user1).__name__)
+    retrieved_place = data_manager.get(place1.id, type(place1).__name__)
+    retrieved_review = data_manager.get(review1.id, type(review1).__name__)
+    retrieved_amenity = data_manager.get(amenity1.id, type(amenity1).__name__)
+    retrieved_city = data_manager.get(city1.id, type(city1).__name__)
+    retrieved_country = data_manager.get(country1.id, type(country1).__name__)
 
-"""Register blueprints"""
-app.register_blueprint(amenity_bp, url_prefix='/api')
-app.register_blueprint(city_bp, url_prefix='/api')
-app.register_blueprint(country_bp, url_prefix='/api')
-app.register_blueprint(place_bp, url_prefix='/api')
-app.register_blueprint(user_bp, url_prefix='/api')
+    print("Retrieved User:", retrieved_user)
+    print("Retrieved Place:", retrieved_place)
+    print("Retrieved Review:", retrieved_review)
+    print("Retrieved Amenity:", retrieved_amenity)
+    print("Retrieved City:", retrieved_city)
+    print("Retrieved Country:", retrieved_country)
+
+    # Update entity
+    user1.last_name = "Smith"
+    data_manager.update(user1)
+    updated_user = data_manager.get(user1.id, type(user1).__name__)
+    print("Updated User:", updated_user)
+
+    # Delete entity
+    data_manager.delete(place1.id, type(place1).__name__)
+    deleted_place = data_manager.get(place1.id, type(place1).__name__)
+    print("Deleted Place:", deleted_place)
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    main()
