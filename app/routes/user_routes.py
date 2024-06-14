@@ -23,15 +23,16 @@ email_regex = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
 
 def is_valid_email(email):
     """
-    Valide le format d'une adresse email en utilisant une expression régulière.
+    Valider le format d'une adresse email en utilisant une expression régulière.
     """
+
     return re.match(email_regex, email) is not None
 
 
 @api.route('/users')
 class UserList(Resource):
     """
-    Classe UserList qui hérite Ressource.
+    Classe UserList qui hérite de Ressource.
     """
 
     @api.marshal_list_with(user_model)
@@ -53,10 +54,10 @@ class UserList(Resource):
 
         if not is_valid_email(data.get('email', '')):
             return {'message': 'Format d\'email invalide'}, 400
-        
+
         if any(user['email'] == data['email'] for user in users.values()):
             return {'message': 'Email déjà utilisé'}, 409
-        
+
         if not data.get('first_name') or not data.get('last_name'):
             return {'message': 'Prénom et nom de famille sont obligatoires'}, 400
 
@@ -75,7 +76,7 @@ class UserList(Resource):
 @api.route('/users/<int:user_id>')
 class User(Resource):
     """
-    Classe User qui hérite Ressource.
+    Classe User qui hérite de Ressource.
     """
 
     @api.marshal_with(user_model)
@@ -97,16 +98,16 @@ class User(Resource):
 
         data = request.json
         user = users.get(user_id)
-        
+
         if user is None:
             return {'message': 'Utilisateur non trouvé'}, 404
-        
+
         if not is_valid_email(data.get('email', '')):
             return {'message': 'Format d\'email invalide'}, 400
-        
+
         if any(u['email'] == data['email'] and u['id'] != user_id for u in users.values()):
             return {'message': 'Email déjà utilisé'}, 409
-        
+
         if not data.get('first_name') or not data.get('last_name'):
             return {'message': 'Prénom et nom de famille sont obligatoires'}, 400
 
@@ -124,6 +125,6 @@ class User(Resource):
 
         if user_id not in users:
             return {'message': 'Utilisateur non trouvé'}, 404
-        
+
         del users[user_id]
         return '', 204
