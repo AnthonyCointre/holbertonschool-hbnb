@@ -25,7 +25,7 @@ class CountryList:
         """
 
         if country_code == "US":
-            return cls(country_id="US", name="États-Unis")
+            return cls(country_id="US", name="United States")
         elif country_code == "CA":
             return cls(country_id="CA", name="Canada")
         return None
@@ -37,14 +37,13 @@ class CountryList:
         """
 
         return [
-            cls(country_id="US", name="États-Unis"),
+            cls(country_id="US", name="United States"),
             cls(country_id="CA", name="Canada"),
         ]
 
-
 class CountryResource(Resource):
     """
-    Classe CountryResource héritant de Resource.
+    Classe CountryResource qui hérite de Resource.
     """
 
     def get(self, country_code=None):
@@ -56,7 +55,7 @@ class CountryResource(Resource):
             country = CountryList.get(country_code)
             if country:
                 return {'country_id': country.country_id, 'name': country.name}, 200
-            return {'error': 'Pays non trouvé'}, 404
+            return {'error': 'Country not found'}, 404
         else:
             countries = CountryList.get_all()
             return [{'country_id': country.country_id, 'name': country.name} for country in countries], 200
