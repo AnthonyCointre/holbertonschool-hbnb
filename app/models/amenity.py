@@ -4,22 +4,18 @@ from app.models.base_model import BaseModel
 
 
 class Amenity(BaseModel):
-    """
-    Classe Amenity qui hérite de BaseModel.
-    """
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.places = []
 
-    def __init__(self, amenity_id="", amenity_name=""):
-        """
-        Initialise une nouvelle instance de Amenity.
-        """
-
-        super().__init__(amenity_id)
-        self.id = amenity_id
-        self.name = amenity_name
+    def to_dict(self):
+        amenity_dict = super().to_dict()
+        amenity_dict.update({
+            "name": self.name,
+            "places": [place.id for place in self.places]
+        })
+        return amenity_dict
 
     def __repr__(self):
-        """
-        Retourne une représentation sous forme de chaîne de caractères de l'agrément.
-        """
-
-        return f"amenity {self.id} {self.name}"
+        return f"<Amenity {self.name}>"

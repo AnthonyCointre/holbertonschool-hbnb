@@ -1,35 +1,41 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 from app.models.base_model import BaseModel
 
 
 class User(BaseModel):
-    """
-    Classe User qui hérite de BaseModel.
-    """
-
-    def __init__(self, id, user_first_name="", user_last_name="", user_email=""):
-        """
-        Initialise une nouvelle instance de User.
-        """
-
-        super().__init__(id)
-        self.email = user_email
-        self.first_name = user_first_name
-        self.last_name = user_last_name
+    def __init__(self, email, password, first_name, last_name):
+        super().__init__()
+        self.email = email
+        self.password = password
+        self.first_name = first_name
+        self.last_name = last_name
         self.places = []
 
-    def add_place(self, place_id):
-        """
-        Ajoute un lieu à la liste des lieux associés à l'utilisateur.
-        """
+    def update_profile(self, first_name=None, last_name=None):
+        if first_name:
+            self.first_name = first_name
+        if last_name:
+            self.last_name = last_name
+        self.updated_at = datetime.now()
 
-        if place_id not in self.places:
-            self.places.append(place_id)
+    def add_place(self, place):
+        if place not in self.places:
+            self.places.append(place)
+            place.host = self
+            place.updated_at = datetime.now()
+
+    def to_dict(self):
+        user_dict = super().to_dict()
+        user_dict.update({
+            "email": self.email,
+            "password": self.password,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "places": [place.id for place in self.places]
+        })
+        return user_dict
 
     def __repr__(self):
-        """
-        Retourne une représentation sous forme de chaîne de caractères de l'utilisateur.
-        """
-
-        return f"User {self.id} {self.email} {self.first_name} {self.last_name}"
+        return f"<User {self.email}>"

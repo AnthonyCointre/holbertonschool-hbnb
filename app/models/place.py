@@ -1,46 +1,56 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 from app.models.base_model import BaseModel
 
 
 class Place(BaseModel):
-    """
-    Classe Place qui hérite de BaseModel.
-    """
-
-    def __init__(self, place_id="", place_name="", place_description="", place_address="", place_city="", place_country="", place_owner_id=""):
-        """
-        Initialise une nouvelle instance de Place.
-        """
-
-        super().__init__(place_id)
-        self.id = place_id
-        self.name = place_name
-        self.description = place_description
-        self.address = place_address
-        self.city = place_city
-        self.country = place_country
-        self.owner_id = place_owner_id
-        self.reviews = []
+    def __init__(self, name, description, address, city, latitude, longitude, num_rooms, num_bathrooms, price_per_night, max_guests):
+        super().__init__()
+        self.name = name
+        self.description = description
+        self.address = address
+        self.city = city
+        self.latitude = latitude
+        self.longitude = longitude
+        self.num_rooms = num_rooms
+        self.num_bathrooms = num_bathrooms
+        self.price_per_night = price_per_night
+        self.max_guests = max_guests
         self.amenities = []
+        self.reviews = []
+        self.host = None
 
     def add_review(self, review):
-        """
-        Ajoute un avis à la liste des avis.
-        """
-
-        self.reviews.append(review)
+        if review not in self.reviews:
+            self.reviews.append(review)
+            review.place = self
+            review.updated_at = datetime.now()
 
     def add_amenity(self, amenity):
-        """
-        Ajoute une commodité à la liste des commodités.
-        """
+        if amenity not in self.amenities:
+            self.amenities.append(amenity)
+            amenity.places.append(self)
+            amenity.updated_at = datetime.now()
 
-        self.amenities.append(amenity)
+    def to_dict(self):
+        place_dict = super().to_dict()
+        place_dict.update({
+            "name": self.name,
+            "description": self.description,
+            "address": self.address,
+            "city": self.city.id if self.city else None,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "num_rooms": self.num_rooms,
+            "num_bathrooms": self.num_bathrooms,
+            "price_per_night": self.price_per_night,
+            "max_guests": self.max_guests,
+            "amenities": [amenity.id for amenity in self.amenities],
+            "reviews": [review.id for review in self.reviews],
+            "host": self.host.id if self.host else None
+        })
+        return place_dict
 
     def __repr__(self):
-        """
-        Retourne une représentation sous forme de chaîne de caractères du lieu.
-        """
-
-        return f"Place {self.id} {self.name} {self.description} {self.address} {self.city} {self.country} {self.owner_id}"
+        return f"<Place {self.name}>"
