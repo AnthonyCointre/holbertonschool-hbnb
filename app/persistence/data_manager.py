@@ -1,66 +1,28 @@
 #!/usr/bin/python3
 
-from typing import List, Type, Any
 from app.persistence.ipersistence_manager import IPersistenceManager
 
 
 class DataManager(IPersistenceManager):
-    """
-    La classe DataManager implémente l'interface IPersistenceManager et fournit des méthodes pour gérer les données.
-    """
-
     def __init__(self):
-        """
-        Initialise l'objet DataManager.
-        """
+        self.storage = {}
 
-        super().__init__()
+    def save(self, entity):
+        self.storage[(entity.id, type(entity).__name__)] = entity
 
-    def get(self, cls: Type[Any], id: Any) -> Any:
-        """
-        Récupère un objet de la classe spécifiée avec l'identifiant donné.
-        """
+    def get(self, entity_id, entity_type):
+        return self.storage.get((entity_id, entity_type), None)
 
-        pass
+    def update(self, entity):
+        if (entity.id, type(entity).__name__) in self.storage:
+            self.storage[(entity.id, type(entity).__name__)] = entity
+        else:
+            raise ValueError(
+                f"{type(entity).__name__} with id {entity.id} does not exist.")
 
-    def get_all(self, cls: Type[Any]) -> List[Any]:
-        """
-        Récupère tous les objets de la classe spécifiée.
-        """
-
-        pass
-
-    def save(self):
-        """
-        Enregistre les modifications apportées aux données.
-        """
-
-        pass
-
-    def delete(self, obj: Any = None) -> None:
-        """
-        Supprime l'objet spécifié ou tous les objets si aucun argument n'est fourni.
-        """
-
-        pass
-
-    def reload(self):
-        """
-        Recharge les données.
-        """
-
-        pass
-
-    def update(self, obj: Any):
-        """
-        Met à jour l'objet spécifié.
-        """
-
-        pass
-
-    def close(self):
-        """
-        Ferme le gestionnaire de données.
-        """
-
-        pass
+    def delete(self, entity_id, entity_type):
+        if (entity_id, entity_type) in self.storage:
+            del self.storage[(entity_id, entity_type)]
+        else:
+            raise ValueError(
+                f"{entity_type} with id {entity_id} does not exist.")
