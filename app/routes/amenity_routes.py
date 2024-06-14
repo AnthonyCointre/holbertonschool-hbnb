@@ -48,7 +48,7 @@ class AmenityList(Resource):
     @amenity_ns.marshal_list_with(amenity_model)
     def get(self):
         """
-        Récupérer toutes les aménités.
+        Endpoint pour récupérer toutes les aménités.
         """
 
         return [serialize_amenity(amenity) for amenity in amenities_db]
@@ -92,7 +92,7 @@ class AmenityDetail(Resource):
     @amenity_ns.response(404, 'Amenity not found')
     def get(self, amenity_id):
         """
-        Récupérer les détails d'une aménité spécifique.
+        Endpoint pour récupérer les détails d'une aménité spécifique.
         """
 
         for amenity in amenities_db:
@@ -106,7 +106,7 @@ class AmenityDetail(Resource):
     @amenity_ns.response(404, 'Amenity not found')
     def put(self, amenity_id):
         """
-        Mettre à jour une aménité existante.
+        Endpoint pour mettre à jour une aménité existante.
         """
 
         data = request.json
@@ -128,7 +128,7 @@ class AmenityDetail(Resource):
     @amenity_ns.response(404, 'Amenity not found')
     def delete(self, amenity_id):
         """
-        Supprimer une aménité spécifique.
+        Endpoint pour supprimer une aménité spécifique.
         """
 
         global amenities_db
