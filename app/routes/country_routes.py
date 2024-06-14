@@ -41,6 +41,7 @@ class CountryList:
             cls(country_id="CA", name="Canada"),
         ]
 
+
 class CountryResource(Resource):
     """
     Classe CountryResource qui hérite de Resource.
