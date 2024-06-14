@@ -3,6 +3,7 @@
 from typing import List, Type, Any
 from app.persistence.ipersistence_manager import IPersistenceManager
 
+
 class DataManager(IPersistenceManager):
     """
     La classe DataManager implémente l'interface IPersistenceManager et fournit des méthodes pour gérer les données.
