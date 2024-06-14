@@ -25,6 +25,7 @@ place_model = api.model('Place', {
     'amenity_ids': fields.List(fields.String, description='List of amenity IDs')
 })
 
+
 @app.route('/places/', methods=['POST'])
 def create_place():
     """
