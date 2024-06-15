@@ -4,16 +4,28 @@ from app.models.base_model import BaseModel
 
 
 class Country(BaseModel):
-    def __init__(self, name):
+    """
+    Modèle de données représentant un pays.
+    """
+
+    def __init__(self, name, code):
+        """
+        Initialiser une instance de Country.
+        """
+
         super().__init__()
-        self.name = name
+        self._name = name
+        self._code = code
 
     def to_dict(self):
-        country_dict = super().to_dict()
-        country_dict.update({
-            "name": self.name
-        })
-        return country_dict
+        """
+        Convertir l'instance de Country en un dictionnaire de données.
+        """
 
-    def __repr__(self):
-        return f"<Country {self.name}>"
+        return {
+            "country_id": self.id,
+            "name": self._name,
+            "code": self._code,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }

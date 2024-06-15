@@ -4,18 +4,26 @@ from app.models.base_model import BaseModel
 
 
 class Amenity(BaseModel):
+    """
+    Modèle de données représentant une commodité.
+    """
+
     def __init__(self, name):
+        """
+        Initialiser une instance de Amenity.
+        """
+
         super().__init__()
-        self.name = name
-        self.places = []
+        self._name = name
 
     def to_dict(self):
-        amenity_dict = super().to_dict()
-        amenity_dict.update({
-            "name": self.name,
-            "places": [place.id for place in self.places]
-        })
-        return amenity_dict
+        """
+        Convertir l'instance de Amenity en un dictionnaire de données.
+        """
 
-    def __repr__(self):
-        return f"<Amenity {self.name}>"
+        return {
+            "amenity_id": self.id,
+            "name": self._name,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
