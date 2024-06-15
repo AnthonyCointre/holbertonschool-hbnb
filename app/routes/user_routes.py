@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, jsonify, request, abort, current_app
+from datetime import datetime
 from app.models.user import User
 
 user_bp = Blueprint('user_bp', __name__)
@@ -66,7 +67,7 @@ def update_user(user_id):
     user['_email'] = email
     user['_first_name'] = first_name
     user['_last_name'] = last_name
-    user['updated_at'] = User(email, first_name, last_name).updated_at
+    user['updated_at'] = datetime.utcnow().isoformat()
 
     data_manager.update(user)
     return jsonify(user), 200
