@@ -1,66 +1,89 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, request
-from flask_restful import Resource
-from app.models.city import City, CityCollection
-from app.models.country import Country
+from flask import Blueprint, request, jsonify, current_app
+import uuid
+from datetime import datetime
+
+city_bp = Blueprint('city_bp', __name__)
 
 
-class cityCollectionResource(Resource):
-    def __init__(self):
-        """ Pre-loaded countries for validation"""
-        self.city_collection = CityCollection()
+@city_bp.route('/cities', methods=['POST'])
+def create_city():
+    data_manager_city = current_app.config['DATA_MANAGER_CITY']
+    data_manager_country = current_app.config['DATA_MANAGER_COUNTRY']
+    data = request.get_json()
 
-        self.countries = [
-            Country(country_id="US", country_name="United States"),
-            Country(country_id="FR", country_name="France")
-        ]
+    if not data or not data.get('name') or not data.get('country_code'):
+        return jsonify({'error': 'Name and country_code are required'}), 400
 
-    def get(self):
-        """  Get all cities"""
-        return jsonify([city.to_dict() for city in self.city_collection.cities])
-    
-    def post(self):
-        """Add a new city"""
-        data = request.get_json()
-        country_code = data.get("country_code")
-        if country_code is None:
-            return jsonify({"error": "Missing country_code"}), 400
+    country_code = data['country_code'].upper()
+    if not any(country['code'] == country_code for country in data_manager_country.data):
+        return jsonify({'error': 'Invalid country code'}), 400
 
-        new_city = City(city_id=data.get("id"), city_name=data.get(
-            "name"), city_country=country_code)
-        self.city_collection.add(new_city)
-        return {"message": "City added successfully"}, 201
+    if any(city['name'].lower() == data['name'].lower() and city['country_code'] == country_code for city in data_manager_city.data):
+        return jsonify({'error': 'City already exists in this country'}), 409
 
-class cityResource(Resource):
-    def __init__(self):
-        """ Pre-loaded countries for validation"""
-        self.city_collection = CityCollection()
+    new_city = {
+        "id": str(uuid.uuid4()),
+        "name": data['name'],
+        "country_code": country_code,
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    data_manager_city.data.append(new_city)
+    data_manager_city.save()
 
-    def get(self, city_id):
-        """ Get a city by id"""
-        city = self.city_collection.get(city_id)
-        if city is not None:
-            return jsonify(city.to_dict())
-        else:
-            return jsonify({"error": "City not found"}), 404
+    return jsonify(new_city), 201
 
-    def put(self, city_id):
-        """update city by id"""
-        data = request.get_json()
-        city = self.city_collection.get(city_id)
-        if city is not None:
-            city.name = data.get("name")
-            city.country = data.get("country_code")
-            return {"message": "City updated successfully"}, 200
-        else:
-            return {"message": "City not found"}, 404
 
-    def delete(self, city_id):
-        """delete city by id"""
-        city = self.city_collection.get(city_id)
-        if city is not None:
-            self.city_collection.delete(city)
-            return {"message": "City deleted successfully"}, 200
-        else:
-            return {"message": "City not found"}, 404
+@city_bp.route('/cities', methods=['GET'])
+def get_cities():
+    data_manager = current_app.config['DATA_MANAGER_CITY']
+    return jsonify(data_manager.data), 200
+
+
+@city_bp.route('/cities/<city_id>', methods=['GET'])
+def get_city(city_id):
+    data_manager = current_app.config['DATA_MANAGER_CITY']
+    city = next((c for c in data_manager.data if c['id'] == city_id), None)
+    if not city:
+        return jsonify({'error': 'City not found'}), 404
+    return jsonify(city), 200
+
+
+@city_bp.route('/cities/<city_id>', methods=['PUT'])
+def update_city(city_id):
+    data_manager_city = current_app.config['DATA_MANAGER_CITY']
+    data_manager_country = current_app.config['DATA_MANAGER_COUNTRY']
+    data = request.get_json()
+
+    city = next(
+        (c for c in data_manager_city.data if c['id'] == city_id), None)
+    if not city:
+        return jsonify({'error': 'City not found'}), 404
+
+    if 'name' in data:
+        city['name'] = data['name']
+    if 'country_code' in data:
+        country_code = data['country_code'].upper()
+        if not any(country['code'] == country_code for country in data_manager_country.data):
+            return jsonify({'error': 'Invalid country code'}), 400
+        city['country_code'] = country_code
+
+    city['updated_at'] = datetime.now().isoformat()
+    data_manager_city.save()
+
+    return jsonify(city), 200
+
+
+@city_bp.route('/cities/<city_id>', methods=['DELETE'])
+def delete_city(city_id):
+    data_manager = current_app.config['DATA_MANAGER_CITY']
+    city = next((c for c in data_manager.data if c['id'] == city_id), None)
+    if not city:
+        return jsonify({'error': 'City not found'}), 404
+
+    data_manager.data = [c for c in data_manager.data if c['id'] != city_id]
+    data_manager.save()
+
+    return '', 204

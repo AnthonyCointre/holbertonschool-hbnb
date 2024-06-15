@@ -1,130 +1,82 @@
 #!/usr/bin/env python3
 
-from flask import Blueprint, request, jsonify
-from flask_restx import Api, Resource, fields
-import re
+from flask import Blueprint, request, jsonify, current_app
+from app.models.user import User
 
-user_bp = Blueprint('user', __name__)
-
-api = Api(user_bp, doc='/docs')
-
-users = {}
-user_id_counter = 1
-
-user_model = api.model('User', {
-    'id': fields.Integer(readOnly=True, description='Identifiant unique de l\'utilisateur'),
-    'email': fields.String(required=True, description='Adresse email de l\'utilisateur'),
-    'first_name': fields.String(required=True, description='Prénom de l\'utilisateur'),
-    'last_name': fields.String(required=True, description='Nom de famille de l\'utilisateur')
-})
-
-email_regex = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
+user_bp = Blueprint('user_bp', __name__)
 
 
-def is_valid_email(email):
-    """
-    Valider le format d'une adresse email en utilisant une expression régulière.
-    """
+@user_bp.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    if not data or not all(k in data for k in ('email', 'first_name', 'last_name')):
+        return jsonify({'error': 'Missing required fields'}), 400
 
-    return re.match(email_regex, email) is not None
+    email = data['email']
+    first_name = data['first_name']
+    last_name = data['last_name']
 
+    data_manager = current_app.config['DATA_MANAGER_USER']
 
-@api.route('/users')
-class UserList(Resource):
-    """
-    Classe UserList qui hérite de Ressource.
-    """
+    for user in data_manager.data:
+        if user['_email'] == email:
+            return jsonify({'error': 'Email already exists'}), 409
 
-    @api.marshal_list_with(user_model)
-    def get(self):
-        """
-        Endpoint pour obtenir la liste de tous les utilisateurs.
-        """
+    user = User(email=email, first_name=first_name, last_name=last_name)
+    data_manager.save(user.to_dict())
 
-        return list(users.values()), 200
-
-    @api.expect(user_model)
-    def post(self):
-        """
-        Endpoint pour créer un nouvel utilisateur.
-        """
-
-        global user_id_counter
-        data = request.json
-
-        if not is_valid_email(data.get('email', '')):
-            return {'message': 'Format d\'email invalide'}, 400
-
-        if any(user['email'] == data['email'] for user in users.values()):
-            return {'message': 'Email déjà utilisé'}, 409
-
-        if not data.get('first_name') or not data.get('last_name'):
-            return {'message': 'Prénom et nom de famille sont obligatoires'}, 400
-
-        user_id = user_id_counter
-        user_id_counter += 1
-        user = {
-            'id': user_id,
-            'email': data['email'],
-            'first_name': data['first_name'],
-            'last_name': data['last_name']
-        }
-        users[user_id] = user
-        return user, 201
+    return jsonify(user.to_dict()), 201
 
 
-@api.route('/users/<int:user_id>')
-class User(Resource):
-    """
-    Classe User qui hérite de Ressource.
-    """
+@user_bp.route('/users', methods=['GET'])
+def get_users():
+    data_manager = current_app.config['DATA_MANAGER_USER']
+    return jsonify(data_manager.data), 200
 
-    @api.marshal_with(user_model)
-    def get(self, user_id):
-        """
-        Endpoint pour obtenir les détails d'un utilisateur spécifique par ID utilisateur.
-        """
 
-        user = users.get(user_id)
-        if user is None:
-            return {'message': 'Utilisateur non trouvé'}, 404
-        return user
+@user_bp.route('/users/<user_id>', methods=['GET'])
+def get_user(user_id):
+    data_manager = current_app.config['DATA_MANAGER_USER']
+    user = data_manager.get_by_id(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify(user), 200
 
-    @api.expect(user_model)
-    def put(self, user_id):
-        """
-        Endpoint pour mettre à jour les détails d'un utilisateur spécifique par ID utilisateur.
-        """
 
-        data = request.json
-        user = users.get(user_id)
+@user_bp.route('/users/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Missing required data'}), 400
 
-        if user is None:
-            return {'message': 'Utilisateur non trouvé'}, 404
+    data_manager = current_app.config['DATA_MANAGER_USER']
+    user = data_manager.get_by_id(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
-        if not is_valid_email(data.get('email', '')):
-            return {'message': 'Format d\'email invalide'}, 400
+    email = data.get('email', user['_email'])
+    first_name = data.get('first_name', user['_first_name'])
+    last_name = data.get('last_name', user['_last_name'])
 
-        if any(u['email'] == data['email'] and u['id'] != user_id for u in users.values()):
-            return {'message': 'Email déjà utilisé'}, 409
+    if email != user['_email']:
+        for u in data_manager.data:
+            if u['_email'] == email:
+                return jsonify({'error': 'Email already exists'}), 409
 
-        if not data.get('first_name') or not data.get('last_name'):
-            return {'message': 'Prénom et nom de famille sont obligatoires'}, 400
+    user['_email'] = email
+    user['_first_name'] = first_name
+    user['_last_name'] = last_name
+    user['updated_at'] = User(email, first_name, last_name).updated_at
 
-        user.update({
-            'email': data['email'],
-            'first_name': data['first_name'],
-            'last_name': data['last_name']
-        })
-        return user
+    data_manager.update(user)
+    return jsonify(user), 200
 
-    def delete(self, user_id):
-        """
-        Endpoint pour supprimer un utilisateur spécifique par ID utilisateur.
-        """
 
-        if user_id not in users:
-            return {'message': 'Utilisateur non trouvé'}, 404
-
-        del users[user_id]
-        return '', 204
+@user_bp.route('/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    data_manager = current_app.config['DATA_MANAGER_USER']
+    user = data_manager.get_by_id(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    data_manager.delete(user_id)
+    return '', 204

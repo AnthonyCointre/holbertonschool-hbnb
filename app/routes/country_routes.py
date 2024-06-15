@@ -1,62 +1,31 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, request, Flask
-from flask_restful import Resource, Api
-from app.models.country import Country
+from flask import Blueprint, request, jsonify, current_app
+
+country_bp = Blueprint('country_bp', __name__)
 
 
-class CountryList:
-    """
-    Classe CountryList.
-    """
-
-    def __init__(self, country_id, name):
-        """
-        Initialiser un objet CountryList avec l'identifiant et le nom du pays.
-        """
-
-        self.country_id = country_id
-        self.name = name
-
-    @classmethod
-    def get(cls, country_code):
-        """
-        Endpoint pour récupérer les détails d'un pays en fonction du code pays.
-        """
-
-        if country_code == "US":
-            return cls(country_id="US", name="United States")
-        elif country_code == "CA":
-            return cls(country_id="CA", name="Canada")
-        return None
-
-    @classmethod
-    def get_all(cls):
-        """
-        Endpoint pour récupérer tous les pays disponibles.
-        """
-
-        return [
-            cls(country_id="US", name="United States"),
-            cls(country_id="CA", name="Canada"),
-        ]
+@country_bp.route('/countries', methods=['GET'])
+def get_countries():
+    data_manager = current_app.config['DATA_MANAGER_COUNTRY']
+    return jsonify(data_manager.data), 200
 
 
-class CountryResource(Resource):
-    """
-    Classe CountryResource qui hérite de Resource.
-    """
+@country_bp.route('/countries/<country_code>', methods=['GET'])
+def get_country_by_code(country_code):
+    data_manager = current_app.config['DATA_MANAGER_COUNTRY']
+    country = next(
+        (c for c in data_manager.data if c['code'] == country_code.upper()), None)
+    if not country:
+        return jsonify({'error': 'Country not found'}), 404
+    return jsonify(country), 200
 
-    def get(self, country_code=None):
-        """
-        Endpoint pour gérer les requêtes GET sur la ressource des pays.
-        """
 
-        if country_code:
-            country = CountryList.get(country_code)
-            if country:
-                return {'country_id': country.country_id, 'name': country.name}, 200
-            return {'error': 'Country not found'}, 404
-        else:
-            countries = CountryList.get_all()
-            return [{'country_id': country.country_id, 'name': country.name} for country in countries], 200
+@country_bp.route('/countries/<country_code>/cities', methods=['GET'])
+def get_cities_by_country_code(country_code):
+    data_manager_city = current_app.config['DATA_MANAGER_CITY']
+    cities = [city for city in data_manager_city.data if city['country_code']
+              == country_code.upper()]
+    if not cities:
+        return jsonify({'error': 'No cities found for this country'}), 404
+    return jsonify(cities), 200
