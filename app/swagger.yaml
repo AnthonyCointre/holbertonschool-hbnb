@@ -1,0 +1,376 @@
+openapi: 3.0.0
+info:
+  title: Your API Documentation
+  description: API documentation for managing users, countries, cities, amenities, places, and reviews.
+  version: 1.0.0
+
+paths:
+  /users:
+    get:
+      summary: Retrieve all users
+      responses:
+        '200':
+          description: A list of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{user_id}:
+    get:
+      summary: Retrieve a specific user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: ID of the user to retrieve
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    put:
+      summary: Update a specific user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: ID of the user to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    delete:
+      summary: Delete a specific user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: ID of the user to delete
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+
+  /countries:
+    get:
+      summary: Retrieve all countries
+      responses:
+        '200':
+          description: A list of all countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+
+  /countries/{country_code}:
+    get:
+      summary: Retrieve a specific country by code
+      parameters:
+        - in: path
+          name: country_code
+          required: true
+          schema:
+            type: string
+          description: ISO code of the country to retrieve
+      responses:
+        '200':
+          description: Country details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '404':
+          description: Country not found
+
+  /countries/{country_code}/cities:
+    get:
+      summary: Retrieve all cities belonging to a specific country
+      parameters:
+        - in: path
+          name: country_code
+          required: true
+          schema:
+            type: string
+          description: ISO code of the country to retrieve cities for
+      responses:
+        '200':
+          description: A list of cities belonging to the country
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+
+  /cities:
+    get:
+      summary: Retrieve all cities
+      responses:
+        '200':
+          description: A list of all cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+
+  /cities/{city_id}:
+    get:
+      summary: Retrieve a specific city by ID
+      parameters:
+        - in: path
+          name: city_id
+          required: true
+          schema:
+            type: string
+          description: ID of the city to retrieve
+      responses:
+        '200':
+          description: City details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+        '404':
+          description: City not found
+
+  /amenities:
+    get:
+      summary: Retrieve all amenities
+      responses:
+        '200':
+          description: A list of all amenities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Amenity'
+
+  /amenities/{amenity_id}:
+    get:
+      summary: Retrieve a specific amenity by ID
+      parameters:
+        - in: path
+          name: amenity_id
+          required: true
+          schema:
+            type: string
+          description: ID of the amenity to retrieve
+      responses:
+        '200':
+          description: Amenity details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Amenity'
+        '404':
+          description: Amenity not found
+
+  /places:
+    get:
+      summary: Retrieve all places
+      responses:
+        '200':
+          description: A list of all places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Place'
+
+  /places/{place_id}:
+    get:
+      summary: Retrieve a specific place by ID
+      parameters:
+        - in: path
+          name: place_id
+          required: true
+          schema:
+            type: string
+          description: ID of the place to retrieve
+      responses:
+        '200':
+          description: Place details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '404':
+          description: Place not found
+
+    put:
+      summary: Update a specific place by ID
+      parameters:
+        - in: path
+          name: place_id
+          required: true
+          schema:
+            type: string
+          description: ID of the place to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Place'
+      responses:
+        '200':
+          description: Place updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '404':
+          description: Place not found
+
+    delete:
+      summary: Delete a specific place by ID
+      parameters:
+        - in: path
+          name: place_id
+          required: true
+          schema:
+            type: string
+          description: ID of the place to delete
+      responses:
+        '204':
+          description: Place deleted successfully
+        '404':
+          description: Place not found
+
+  /places/{place_id}/reviews:
+    post:
+      summary: Create a new review for a specific place
+      parameters:
+        - in: path
+          name: place_id
+          required: true
+          schema:
+            type: string
+          description: ID of the place to review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid request body
+        '404':
+          description: Place not found
+
+  /users/{user_id}/reviews:
+    get:
+      summary: Retrieve all reviews written by a specific user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: ID of the user to retrieve reviews for
+      responses:
+        '200':
+          description: A list of reviews written by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '404':
+          description: User not found
+
+  /places/{place_id}/reviews:
+    get:
+      summary: Retrieve all reviews for a specific place
+      parameters:
+        - in: path
+          name: place_id
+          required: true
+          schema:
+            type: string
+          description: ID of the place to retrieve reviews for
+      responses:
+        '200':
+          description: A list of reviews for the place
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '404':
+          description: Place not found
+
+  /reviews/{review_id}:
+    get:
+      summary: Retrieve a specific review by ID
+      parameters:
+        - in: path
+          name: review_id
+          required: true
+          schema:
+            type: string
+          description: ID of the review to retrieve
+      responses:
+        '200':
+          description: Review details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/
