@@ -1,38 +1,38 @@
 #!/usr/bin/env python3
 
 import unittest
-from app.models.base_model import BaseModel
+from datetime import datetime
+from unittest.mock import MagicMock
 from app.models.amenity import Amenity
+from app.models.base_model import BaseModel
 
 
 class TestAmenity(unittest.TestCase):
-    """
-    Classe de tests pour la classe Amenity.
-    Utilise le framework de tests unitaires unittest.
-    """
 
     def setUp(self):
-        """
-        Configure une instance de Amenity avant chaque test.
-        """
+        self.mock_data_manager = MagicMock()
+        self.amenity = Amenity(
+            name="WiFi", data_manager=self.mock_data_manager)
 
-        self.amenity = Amenity(amenity_id="1", amenity_name="Pool")
+    def test_init(self):
+        self.assertIsInstance(self.amenity, BaseModel)
+        self.assertEqual(self.amenity.name, "WiFi")
+        self.assertIsNotNone(self.amenity.id)
+        self.assertIsInstance(self.amenity.created_at, datetime)
+        self.assertIsInstance(self.amenity.updated_at, datetime)
 
-    def test_amenity_initialization(self):
-        """
-        Teste si l'instance de Amenity est correctement initialisée.
-        """
-
-        self.assertEqual(self.amenity.id, "1")
-        self.assertEqual(self.amenity.name, "Pool")
-
-    def test_repr(self):
-        """
-        Teste la méthode __repr__ pour la représentation en chaîne de caractères de l'agrément.
-        """
-
-        expected_repr = "amenity 1 Pool"
-        self.assertEqual(repr(self.amenity), expected_repr)
+    def test_to_dict(self):
+        self.amenity.id = "amenity_123"
+        self.amenity.created_at = datetime(2023, 6, 1, 12, 0, 0)
+        self.amenity.updated_at = datetime(2023, 6, 2, 12, 0, 0)
+        amenity_dict = self.amenity.to_dict()
+        expected_dict = {
+            "amenity_id": "amenity_123",
+            "amenity_name": "WiFi",
+            "created_at": "2023-06-01T12:00:00",
+            "updated_at": "2023-06-02T12:00:00"
+        }
+        self.assertEqual(amenity_dict, expected_dict)
 
 
 if __name__ == '__main__':

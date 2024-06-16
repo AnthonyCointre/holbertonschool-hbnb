@@ -1,67 +1,73 @@
 #!/usr/bin/env python3
 
 import unittest
-from app.models.base_model import BaseModel
+from datetime import datetime
+from unittest.mock import MagicMock
 from app.models.place import Place
+from app.models.base_model import BaseModel
 
 
 class TestPlace(unittest.TestCase):
-    """
-    Classe de tests pour la classe Place.
-    Utilise le framework de tests unitaires unittest.
-    """
 
     def setUp(self):
-        """
-        Configure une instance de Place avant chaque test.
-        """
+        self.mock_data_manager = MagicMock()
+        self.place = Place(
+            name="Test Place",
+            description="A nice place to stay",
+            address="123 Test St",
+            city_id="city_123",
+            latitude=37.7749,
+            longitude=-122.4194,
+            host_id="host_456",
+            num_rooms=3,
+            num_bathrooms=2,
+            price_per_night=100,
+            max_guests=4,
+            amenity_ids=1,
+            data_manager=self.mock_data_manager
+        )
 
-        self.place = Place(place_id="1", place_name="Eiffel Tower", place_description="Famous landmark in Paris",
-                           place_address="Champ de Mars, 5 Avenue Anatole France", place_city="Paris", place_country="France", place_owner_id="owner_1")
+    def test_init(self):
+        self.assertIsInstance(self.place, BaseModel)
+        self.assertEqual(self.place.name, "Test Place")
+        self.assertEqual(self.place.description, "A nice place to stay")
+        self.assertEqual(self.place.address, "123 Test St")
+        self.assertEqual(self.place.city_id, "city_123")
+        self.assertEqual(self.place.latitude, 37.7749)
+        self.assertEqual(self.place.longitude, -122.4194)
+        self.assertEqual(self.place.host_id, "host_456")
+        self.assertEqual(self.place.num_rooms, 3)
+        self.assertEqual(self.place.num_bathrooms, 2)
+        self.assertEqual(self.place.price_per_night, 100)
+        self.assertEqual(self.place.max_guests, 4)
+        self.assertEqual(self.place.amenity_ids, 1)
+        self.assertIsNotNone(self.place.id)
+        self.assertIsInstance(self.place.created_at, datetime)
+        self.assertIsInstance(self.place.updated_at, datetime)
 
-    def test_place_initialization(self):
-        """
-        Teste si l'instance de Place est correctement initialisée.
-        """
-
-        self.assertEqual(self.place.id, "1")
-        self.assertEqual(self.place.name, "Eiffel Tower")
-        self.assertEqual(self.place.description, "Famous landmark in Paris")
-        self.assertEqual(self.place.address, "Champ de Mars, 5 Avenue Anatole France")
-        self.assertEqual(self.place.city, "Paris")
-        self.assertEqual(self.place.country, "France")
-        self.assertEqual(self.place.owner_id, "owner_1")
-        self.assertEqual(self.place.reviews, [])
-        self.assertEqual(self.place.amenities, [])
-
-    def test_add_review(self):
-        """
-        Teste la méthode add_review pour ajouter des avis au lieu.
-        """
-
-        self.place.add_review("Amazing place!")
-        self.assertIn("Amazing place!", self.place.reviews)
-        self.place.add_review("Must visit!")
-        self.assertIn("Must visit!", self.place.reviews)
-
-    def test_add_amenity(self):
-        """
-        Teste la méthode add_amenity pour ajouter des commodités au lieu.
-        """
-
-        self.place.add_amenity("WiFi")
-        self.assertIn("WiFi", self.place.amenities)
-        self.place.add_amenity("Parking")
-        self.assertIn("Parking", self.place.amenities)
-
-    def test_repr(self):
-        """
-        Teste la méthode __repr__ pour la représentation en chaîne de caractères du lieu.
-        """
-
-        expected_repr = ("Place 1 Eiffel Tower Famous landmark in Paris "
-                         "Champ de Mars, 5 Avenue Anatole France Paris France owner_1")
-        self.assertEqual(repr(self.place), expected_repr)
+    def test_to_dict(self):
+        self.place.id = "place_123"
+        self.place.created_at = datetime(2023, 6, 1, 12, 0, 0)
+        self.place.updated_at = datetime(2023, 6, 2, 12, 0, 0)
+        place_dict = self.place.to_dict()
+        expected_dict = {
+            "place_id": "place_123",
+            "place_name": "Test Place",
+            "description": "A nice place to stay",
+            "address": "123 Test St",
+            "city_id": "city_123",
+            "latitude": 37.7749,
+            "longitude": -122.4194,
+            "host_id": "host_456",
+            "num_rooms": 3,
+            "num_bathrooms": 2,
+            "price_per_night": 100,
+            "max_guests": 4,
+            "amenity_ids": 1,
+            "created_at": "2023-06-01T12:00:00",
+            "updated_at": "2023-06-02T12:00:00"
+        }
+        self.assertEqual(place_dict, expected_dict)
 
 
 if __name__ == '__main__':

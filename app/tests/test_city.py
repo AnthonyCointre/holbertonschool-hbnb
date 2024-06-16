@@ -1,62 +1,40 @@
 #!/usr/bin/env python3
 
 import unittest
+from datetime import datetime
+from unittest.mock import MagicMock
+from app.models.city import City
 from app.models.base_model import BaseModel
-from app.models.city import City, CityCollection
 
 
 class TestCity(unittest.TestCase):
-    """
-    Classe de tests pour la classe City.
-    Utilise le framework de tests unitaires unittest.
-    """
 
     def setUp(self):
-        """
-        Configure une instance de City avant chaque test.
-        """
+        self.mock_data_manager = MagicMock()
+        self.city = City(name="New York", country_id="US",
+                         data_manager=self.mock_data_manager)
 
-        self.city = City(city_id="1", city_name="Paris", city_country="France")
+    def test_init(self):
+        self.assertIsInstance(self.city, BaseModel)
+        self.assertEqual(self.city.name, "New York")
+        self.assertEqual(self.city.country_id, "US")
+        self.assertIsNotNone(self.city.id)
+        self.assertIsInstance(self.city.created_at, datetime)
+        self.assertIsInstance(self.city.updated_at, datetime)
 
-    def test_city_initialization(self):
-        """
-        Teste si l'instance de City est correctement initialisée.
-        """
-
-        self.assertEqual(self.city.id, "1")
-        self.assertEqual(self.city.name, "Paris")
-        self.assertEqual(self.city.country, "France")
-
-    def test_repr(self):
-        """
-        Teste la méthode __repr__ pour la représentation en chaîne de caractères de la ville.
-        """
-
-        expected_repr = "city 1 Paris France"
-        self.assertEqual(repr(self.city), expected_repr)
-
-
-class TestCityCollection(unittest.TestCase):
-    """
-    Classe de tests pour la classe CityCollection.
-    Utilise le framework de tests unitaires unittest.
-    """
-
-    def setUp(self):
-        """
-        Configure une instance de CityCollection avant chaque test.
-        """
-
-        self.collection = CityCollection()
-
-    def test_add_city(self):
-        """
-        Teste la méthode add pour ajouter des villes à la collection.
-        """
-
-        city = City(city_id="2", city_name="Lyon", city_country="France")
-        self.collection.add(city)
-        self.assertIn(city, self.collection.cities)
+    def test_to_dict(self):
+        self.city.id = "city_123"
+        self.city.created_at = datetime(2023, 6, 1, 12, 0, 0)
+        self.city.updated_at = datetime(2023, 6, 2, 12, 0, 0)
+        city_dict = self.city.to_dict()
+        expected_dict = {
+            "city_id": "city_123",
+            "city_name": "New York",
+            "country_id": "US",
+            "created_at": "2023-06-01T12:00:00",
+            "updated_at": "2023-06-02T12:00:00"
+        }
+        self.assertEqual(city_dict, expected_dict)
 
 
 if __name__ == '__main__':

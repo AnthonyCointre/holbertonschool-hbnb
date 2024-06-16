@@ -1,47 +1,39 @@
 #!/usr/bin/env python3
 
 import unittest
-from app.models.base_model import BaseModel
+from datetime import datetime
 from app.models.country import Country
 
 
 class TestCountry(unittest.TestCase):
-    """
-    Classe de tests pour la classe Country.
-    Utilise le framework de tests unitaires unittest.
-    """
 
     def setUp(self):
-        """
-        Configure une instance de Country avant chaque test.
-        """
+        self.country = Country(name="United States", code="US")
 
-        self.country = Country(country_id="1", country_name="France")
+    def test_init(self):
+        self.assertIsInstance(self.country, Country)
+        self.assertEqual(self.country.name, "United States")
+        self.assertEqual(self.country.code, "US")
+        self.assertIsNotNone(self.country.id)
+        self.assertIsInstance(self.country.created_at, datetime)
+        self.assertIsInstance(self.country.updated_at, datetime)
 
-    def test_country_initialization(self):
-        """
-        Teste si l'instance de Country est correctement initialisée.
-        """
+    def test_to_dict(self):
+        self.country.id = "country_123"
+        self.country.created_at = datetime(2023, 6, 1, 12, 0, 0)
+        self.country.updated_at = datetime(2023, 6, 2, 12, 0, 0)
 
-        self.assertEqual(self.country.id, "1")
-        self.assertEqual(self.country.name, "France")
+        country_dict = self.country.to_dict()
 
-    def test_add_country(self):
-        """
-        Teste la méthode add pour ajouter des pays à la liste.
-        """
+        expected_dict = {
+            "country_id": "country_123",
+            "name": "United States",
+            "code": "US",
+            "created_at": "2023-06-01T12:00:00",
+            "updated_at": "2023-06-02T12:00:00"
+        }
 
-        new_country = Country(country_id="2", country_name="Germany")
-        self.country.add(new_country)
-        self.assertIn(new_country, self.country.countries)
-
-    def test_repr(self):
-        """
-        Teste la méthode __repr__ pour la représentation en chaîne de caractères du pays.
-        """
-
-        expected_repr = "country 1 France"
-        self.assertEqual(repr(self.country), expected_repr)
+        self.assertEqual(country_dict, expected_dict)
 
 
 if __name__ == '__main__':

@@ -1,53 +1,46 @@
 #!/usr/bin/env python3
 
 import unittest
-from app.models.base_model import BaseModel
+from datetime import datetime
+from unittest.mock import MagicMock
 from app.models.user import User
+from app.models.base_model import BaseModel
 
 
 class TestUser(unittest.TestCase):
-    """
-    Classe de tests pour la classe User.
-    Utilise le framework de tests unitaires unittest.
-    """
 
     def setUp(self):
-        """
-        Configure une instance de User avant chaque test.
-        """
+        self.mock_data_manager = MagicMock()
+        self.user = User(
+            email="test@gmail.com",
+            first_name="John",
+            last_name="Doe",
+            data_manager=self.mock_data_manager
+        )
 
-        self.user = User(id=1, user_first_name="John", user_last_name="Doe", user_email="john.doe@example.com")
-
-    def test_user_initialization(self):
-        """
-        Teste si l'instance de User est correctement initialisée.
-        """
-
-        self.assertEqual(self.user.id, 1)
+    def test_init(self):
+        self.assertIsInstance(self.user, BaseModel)
+        self.assertEqual(self.user.email, "test@gmail.com")
         self.assertEqual(self.user.first_name, "John")
         self.assertEqual(self.user.last_name, "Doe")
-        self.assertEqual(self.user.email, "john.doe@example.com")
-        self.assertEqual(self.user.places, [])
+        self.assertIsNotNone(self.user.id)
+        self.assertIsInstance(self.user.created_at, datetime)
+        self.assertIsInstance(self.user.updated_at, datetime)
 
-    def test_add_place(self):
-        """
-        Teste la méthode add_place pour ajouter des lieux à l'utilisateur.
-        """
-
-        self.user.add_place("place_1")
-        self.assertIn("place_1", self.user.places)
-        self.user.add_place("place_2")
-        self.assertIn("place_2", self.user.places)
-        self.user.add_place("place_1")
-        self.assertEqual(self.user.places.count("place_1"), 1)
-
-    def test_repr(self):
-        """
-        Teste la méthode __repr__ pour la représentation en chaîne de caractères de l'utilisateur.
-        """
-
-        expected_repr = "User 1 john.doe@example.com John Doe"
-        self.assertEqual(repr(self.user), expected_repr)
+    def test_to_dict(self):
+        self.user.id = "user_123"
+        self.user.created_at = datetime(2023, 6, 1, 12, 0, 0)
+        self.user.updated_at = datetime(2023, 6, 2, 12, 0, 0)
+        user_dict = self.user.to_dict()
+        expected_dict = {
+            "user_id": "user_123",
+            "email": "test@gmail.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "created_at": "2023-06-01T12:00:00",
+            "updated_at": "2023-06-02T12:00:00"
+        }
+        self.assertEqual(user_dict, expected_dict)
 
 
 if __name__ == '__main__':
