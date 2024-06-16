@@ -1,3 +1,4 @@
+# Start with Python Alpine image
 FROM python:3.11-alpine
 
 # Create a non-root user for the application
