@@ -1,132 +1,107 @@
 #!/usr/bin/env python3
 
-from flask import Blueprint, request, jsonify, current_app
-import uuid
+from flask import Blueprint, jsonify, request, abort, current_app
 from datetime import datetime
+from app.models.place import Place
 
-place_bp = Blueprint('place_bp', __name__)
+place_bp = Blueprint('place', __name__)
 
 
 @place_bp.route('/places', methods=['POST'])
 def create_place():
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    data_manager_city = current_app.config['DATA_MANAGER_CITY']
-    data_manager_amenity = current_app.config['DATA_MANAGER_AMENITY']
-    data = request.get_json()
 
-    required_fields = ['name', 'description', 'address', 'city_id', 'latitude', 'longitude',
-                       'host_id', 'number_of_rooms', 'number_of_bathrooms', 'price_per_night', 'max_guests', 'amenity_ids']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'error': f'{field.capitalize()} is required'}), 400
-
-    name = data['name'].strip()
-    city_id = data['city_id']
-    latitude = data['latitude']
-    longitude = data['longitude']
-    host_id = data['host_id']
-    number_of_rooms = data['number_of_rooms']
-    number_of_bathrooms = data['number_of_bathrooms']
-    price_per_night = data['price_per_night']
-    max_guests = data['max_guests']
-    amenity_ids = data['amenity_ids']
-
-    city = next(
-        (c for c in data_manager_city.data if c['id'] == city_id), None)
-    if not city:
-        return jsonify({'error': 'City not found'}), 404
-
-    amenities = [
-        a for a in data_manager_amenity.data if a['id'] in amenity_ids]
-    if len(amenities) != len(amenity_ids):
-        return jsonify({'error': 'One or more amenities not found'}), 404
-
-    new_place = {
-        "id": str(uuid.uuid4()),
-        "name": name,
-        "description": data['description'],
-        "address": data['address'],
-        "city": city,
-        "latitude": latitude,
-        "longitude": longitude,
-        "host_id": host_id,
-        "number_of_rooms": number_of_rooms,
-        "number_of_bathrooms": number_of_bathrooms,
-        "price_per_night": price_per_night,
-        "max_guests": max_guests,
-        "amenities": amenities,
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
-    data_manager_place.data.append(new_place)
-    data_manager_place.save()
-
-    return jsonify(new_place), 201
+    data_manager = current_app.config['DATA_MANAGER_PLACES']
+    if not request.json:
+        abort(400, 'Input data cannot empty.')
+    name = request.json.get('name')
+    description = request.json.get('description')
+    address = request.json.get('address')
+    city_id = request.json.get('city_id')
+    try:
+        latitude = float(request.json.get('latitude'))
+        longitude = float(request.json.get('longitude'))
+        host_id = request.json.get('host_id')
+        num_rooms = int(request.json.get('num_rooms'))
+        num_bathrooms = int(request.json.get('num_bathrooms'))
+        price_per_night = float(request.json.get('price_per_night'))
+        max_guests = int(request.json.get('max_guests'))
+    except ValueError as e:
+        abort(400, str(e))
+    amenities = request.json.get('amenities', [])
+    if not all([name, address, city_id, host_id, num_rooms, num_bathrooms,
+                price_per_night, max_guests]):
+        abort(400, 'Missing fields.')
+    try:
+        place = Place(name, description, address, city_id, latitude,
+                      longitude,
+                      host_id, num_rooms, num_bathrooms, price_per_night,
+                      max_guests, amenities, data_manager)
+    except ValueError as e:
+        abort(400, str(e))
+    data_manager.save(place)
+    return jsonify(place.to_dict()), 201
 
 
 @place_bp.route('/places', methods=['GET'])
 def get_places():
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    return jsonify(data_manager_place.data), 200
+    data_manager = current_app.config['DATA_MANAGER_PLACES']
+    place_objects = data_manager.storage.get('Place', {}).values()
+    places = []
+    for place in place_objects:
+        place_dict = place.to_dict()
+        city = data_manager.get(place_dict['city_id'], 'City')
+        place_dict['city'] = city.to_dict() if city else None
+        amenities = [data_manager.get(amenity_id, 'Amenity').to_dict(
+        ) for amenity_id in place_dict['amenities'] if
+            data_manager.get(amenity_id, 'Amenity')]
+        place_dict['amenities'] = amenities
+        places.append(place_dict)
+    return jsonify(places), 200
 
 
 @place_bp.route('/places/<place_id>', methods=['GET'])
 def get_place(place_id):
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    place = next(
-        (p for p in data_manager_place.data if p['id'] == place_id), None)
-    if not place:
-        return jsonify({'error': 'Place not found'}), 404
-    return jsonify(place), 200
+    data_manager = current_app.config['DATA_MANAGER_PLACES']
+    place = data_manager.get(place_id, 'Place')
+    if place is None:
+        abort(404, 'Place not found.')
+    place_dict = place.to_dict()
+    city = data_manager.get(place_dict['city_id'], 'City')
+    place_dict['city'] = city.to_dict() if city else None
+    amenities = [data_manager.get(amenity_id, 'Amenity').to_dict(
+    ) for amenity_id in place_dict['amenities'] if
+        data_manager.get(amenity_id, 'Amenity')]
+    place_dict['amenities'] = amenities
+    return jsonify(place_dict), 200
 
 
 @place_bp.route('/places/<place_id>', methods=['PUT'])
 def update_place(place_id):
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    data_manager_city = current_app.config['DATA_MANAGER_CITY']
-    data_manager_amenity = current_app.config['DATA_MANAGER_AMENITY']
+    data_manager = current_app.config['DATA_MANAGER_PLACES']
+    place = data_manager.get(place_id, 'Place')
+    if place is None:
+        abort(404, 'Place not found.')
     data = request.get_json()
-
-    place = next(
-        (p for p in data_manager_place.data if p['id'] == place_id), None)
-    if not place:
-        return jsonify({'error': 'Place not found'}), 404
-
-    required_fields = ['name', 'description', 'address', 'city_id', 'latitude', 'longitude',
-                       'host_id', 'number_of_rooms', 'number_of_bathrooms', 'price_per_night', 'max_guests', 'amenity_ids']
-    for field in required_fields:
-        if field in data:
-            if field == 'city_id':
-                city = next(
-                    (c for c in data_manager_city.data if c['id'] == data['city_id']), None)
-                if not city:
-                    return jsonify({'error': 'City not found'}), 404
-                place['city'] = city
-            elif field == 'amenity_ids':
-                amenities = [
-                    a for a in data_manager_amenity.data if a['id'] in data['amenity_ids']]
-                if len(amenities) != len(data['amenity_ids']):
-                    return jsonify({'error': 'One or more amenities not found'}), 404
-                place['amenities'] = amenities
-            else:
-                place[field] = data[field]
-
-    place['updated_at'] = datetime.now().isoformat()
-    data_manager_place.save()
-
-    return jsonify(place), 200
+    if not data:
+        abort(400, 'Input data cannot be empty.')
+    try:
+        for key, value in data.items():
+            if hasattr(place, key):
+                if not value:
+                    abort(400, f"{key} cannot be empty.")
+                setattr(place, key, value)
+        place.updated_at = datetime.utcnow()
+        data_manager.save(place)
+    except ValueError as e:
+        abort(400, str(e))
+    return jsonify(place.to_dict()), 200
 
 
 @place_bp.route('/places/<place_id>', methods=['DELETE'])
 def delete_place(place_id):
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    place = next(
-        (p for p in data_manager_place.data if p['id'] == place_id), None)
-    if not place:
-        return jsonify({'error': 'Place not found'}), 404
-
-    data_manager_place.data = [
-        p for p in data_manager_place.data if p['id'] != place_id]
-    data_manager_place.save()
-
+    data_manager = current_app.config['DATA_MANAGER_PLACES']
+    place = data_manager.get(place_id, 'Place')
+    if place is None:
+        abort(404, 'Place not found.')
+    data_manager.delete(place_id, 'Place')
     return '', 204

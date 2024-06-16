@@ -1,111 +1,97 @@
 #!/usr/bin/env python3
 
-from flask import Blueprint, request, jsonify, current_app
-import uuid
+from flask import Blueprint, jsonify, request, abort, current_app
 from datetime import datetime
+from app.models.review import Review
 
-review_bp = Blueprint('review_bp', __name__)
+review_bp = Blueprint('review', __name__)
 
 
 @review_bp.route('/places/<place_id>/reviews', methods=['POST'])
 def create_review(place_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
-    data_manager_user = current_app.config['DATA_MANAGER_USER']
-    data_manager_place = current_app.config['DATA_MANAGER_PLACE']
-    data = request.get_json()
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    if not request.json:
+        abort(400, 'Input data cannot be empty.')
+    user_id = request.json.get('user_id')
+    rating = request.json.get('rating')
+    text = request.json.get('text')
 
-    required_fields = ['user_id', 'rating', 'comment']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'error': f'{field.capitalize()} is required'}), 400
-
-    user_id = data['user_id']
-    rating = data['rating']
-    comment = data['comment'].strip()
-
-    user = next(
-        (u for u in data_manager_user.data if u['id'] == user_id), None)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    place = next(
-        (p for p in data_manager_place.data if p['id'] == place_id), None)
-    if not place:
-        return jsonify({'error': 'Place not found'}), 404
-
-    if user['id'] == place['host_id']:
-        return jsonify({'error': 'Hosts cannot review their own places'}), 400
-
-    new_review = {
-        "id": str(uuid.uuid4()),
-        "place_id": place_id,
-        "user_id": user_id,
-        "rating": rating,
-        "comment": comment,
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
-    data_manager_review.data.append(new_review)
-    data_manager_review.save()
-
-    return jsonify(new_review), 201
+    if not all([user_id, rating, text]):
+        abort(400, 'Missing fields.')
+    try:
+        rating = int(rating)
+    except ValueError:
+        abort(400, 'Rating format is invalid.')
+    try:
+        review = Review(place_id, user_id, rating, text, data_manager)
+    except ValueError as e:
+        abort(400, str(e))
+    data_manager.save(review)
+    return jsonify(review.to_dict()), 201
 
 
 @review_bp.route('/users/<user_id>/reviews', methods=['GET'])
-def get_user_reviews(user_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
-    reviews = [r for r in data_manager_review.data if r['user_id'] == user_id]
-    return jsonify(reviews), 200
+def get_reviews_by_user(user_id):
+
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    reviews = data_manager.get_reviews_by_user_id(user_id)
+    return jsonify([review.to_dict() for review in reviews]), 200
 
 
 @review_bp.route('/places/<place_id>/reviews', methods=['GET'])
-def get_place_reviews(place_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
-    reviews = [r for r in data_manager_review.data if r['place_id'] == place_id]
-    return jsonify(reviews), 200
+def get_reviews_by_place(place_id):
+
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    reviews = data_manager.get_reviews_by_place_id(place_id)
+    return jsonify([review.to_dict() for review in reviews]), 200
 
 
 @review_bp.route('/reviews/<review_id>', methods=['GET'])
 def get_review(review_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
-    review = next(
-        (r for r in data_manager_review.data if r['id'] == review_id), None)
-    if not review:
-        return jsonify({'error': 'Review not found'}), 404
-    return jsonify(review), 200
+
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    review = data_manager.get(review_id, 'Review')
+
+    if review is None:
+        abort(404, 'Review not found.')
+    return jsonify(review.to_dict()), 200
 
 
 @review_bp.route('/reviews/<review_id>', methods=['PUT'])
 def update_review(review_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
+
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    review = data_manager.get(review_id, 'Review')
+    if review is None:
+        abort(404, 'Review not found.')
     data = request.get_json()
-
-    review = next(
-        (r for r in data_manager_review.data if r['id'] == review_id), None)
-    if not review:
-        return jsonify({'error': 'Review not found'}), 404
-
-    if 'rating' in data:
-        review['rating'] = data['rating']
-    if 'comment' in data:
-        review['comment'] = data['comment'].strip()
-
-    review['updated_at'] = datetime.now().isoformat()
-    data_manager_review.save()
-
-    return jsonify(review), 200
+    if not data:
+        abort(400, 'Input data cannot be empty.')
+    try:
+        for key, value in data.items():
+            if key in ['rating', 'text']:
+                setattr(review, key, value)
+        review.updated_at = datetime.utcnow()
+        data_manager.save(review)
+    except ValueError as e:
+        abort(400, str(e))
+    return jsonify(review.to_dict()), 200
 
 
 @review_bp.route('/reviews/<review_id>', methods=['DELETE'])
 def delete_review(review_id):
-    data_manager_review = current_app.config['DATA_MANAGER_REVIEW']
-    review = next(
-        (r for r in data_manager_review.data if r['id'] == review_id), None)
-    if not review:
-        return jsonify({'error': 'Review not found'}), 404
-
-    data_manager_review.data = [
-        r for r in data_manager_review.data if r['id'] != review_id]
-    data_manager_review.save()
-
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    review = data_manager.get(review_id, 'Review')
+    if review is None:
+        abort(404, 'Review not found.')
+    data_manager.delete(review_id, 'Review')
     return '', 204
+
+
+@review_bp.route('/reviews', methods=['GET'])
+def get_reviews():
+
+    data_manager = current_app.config['DATA_MANAGER_REVIEWS']
+    reviews = [review.to_dict()
+               for review in data_manager.storage.get('Review', {}).values()]
+    return jsonify(reviews), 200
