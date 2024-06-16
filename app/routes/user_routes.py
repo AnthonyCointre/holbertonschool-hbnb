@@ -4,10 +4,10 @@ from flask import Blueprint, jsonify, request, abort, current_app
 from datetime import datetime
 from app.models.user import User
 
-users_bp = Blueprint('users', __name__)
+user_bp = Blueprint('users', __name__)
 
 
-@users_bp.route('/users', methods=['POST'])
+@user_bp.route('/users', methods=['POST'])
 def create_user():
     data_manager = current_app.config['DATA_MANAGER_USERS']
     data = request.json
@@ -33,7 +33,7 @@ def create_user():
     return jsonify(user.to_dict()), 201
 
 
-@users_bp.route('/users', methods=['GET'])
+@user_bp.route('/users', methods=['GET'])
 def get_users():
     data_manager = current_app.config['DATA_MANAGER_USERS']
     users = [user.to_dict()
@@ -41,7 +41,7 @@ def get_users():
     return jsonify(users), 200
 
 
-@users_bp.route('/users/<user_id>', methods=['GET'])
+@user_bp.route('/users/<user_id>', methods=['GET'])
 def get_user(user_id):
     data_manager = current_app.config['DATA_MANAGER_USERS']
     user = data_manager.get(user_id, 'User')
@@ -50,7 +50,7 @@ def get_user(user_id):
     return jsonify(user.to_dict()), 200
 
 
-@users_bp.route('/users/<user_id>', methods=['PUT'])
+@user_bp.route('/users/<user_id>', methods=['PUT'])
 def update_user(user_id):
     data_manager = current_app.config['DATA_MANAGER_USERS']
     user = data_manager.get(user_id, 'User')
@@ -85,7 +85,7 @@ def update_user(user_id):
     return jsonify(user.to_dict()), 200
 
 
-@users_bp.route('/users/<user_id>', methods=['DELETE'])
+@user_bp.route('/users/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
     data_manager = current_app.config['DATA_MANAGER_USERS']
     if not data_manager.delete(user_id, 'User'):
