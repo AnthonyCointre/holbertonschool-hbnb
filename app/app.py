@@ -1,63 +1,63 @@
 #!/usr/bin/env python3
 
-from app.models.user import User
-from app.models.place import Place
-from app.models.review import Review
-from app.models.amenity import Amenity
-from app.models.city import City
-from app.models.country import Country
-
+import os
+from flask import Flask, send_from_directory
+from flask_swagger_ui import get_swaggerui_blueprint
+from app.routes.user_routes import user_bp
+from app.routes.review_routes import review_bp
+from app.routes.place_routes import place_bp
+from app.routes.country_routes import country_bp
+from app.routes.city_routes import city_bp
+from app.routes.amenity_routes import amenity_bp
 from app.persistence.data_manager import DataManager
 
+port = os.getenv('PORT')
 
-def main():
-    # Initialize DataManager
-    data_manager = DataManager()
+app = Flask(__name__)
 
-    # Create entities
-    user1 = User("user1@example.com", "password123", "John", "Doe")
-    place1 = Place("Cozy House", "A beautiful house in the countryside",
-                   "123 Green St", "Springfield", 42.35, -71.05, 3, 2, 100, 6)
-    review1 = Review(user_id=user1.id, place_id=place1.id,
-                     rating=4, comment="Great place to stay!")
-    amenity1 = Amenity("Wi-Fi")
-    city1 = City("Springfield")
-    country1 = Country("USA")
+data_manager_user = DataManager("app/persistence/data/data_user.json")
+data_manager_review = DataManager("app/persistence/data/data_review.json")
+data_manager_place = DataManager("app/persistence/data/data_place.json")
+data_manager_country = DataManager("app/persistence/data/data_country.json")
+data_manager_city = DataManager("app/persistence/data/data_city.json")
+data_manager_amenity = DataManager("app/persistence/data/data_amenity.json")
 
-    # Save entities
-    data_manager.save(user1)
-    data_manager.save(place1)
-    data_manager.save(review1)
-    data_manager.save(amenity1)
-    data_manager.save(city1)
-    data_manager.save(country1)
+app.config['DATA_MANAGER_USER'] = data_manager_user
+app.config['DATA_MANAGER_REVIEW'] = data_manager_review
+app.config['DATA_MANAGER_PLACE'] = data_manager_place
+app.config['DATA_MANAGER_COUNTRY'] = data_manager_country
+app.config['DATA_MANAGER_CITY'] = data_manager_city
+app.config['DATA_MANAGER_AMENITY'] = data_manager_amenity
 
-    # Retrieve entities
-    retrieved_user = data_manager.get(user1.id, type(user1).__name__)
-    retrieved_place = data_manager.get(place1.id, type(place1).__name__)
-    retrieved_review = data_manager.get(review1.id, type(review1).__name__)
-    retrieved_amenity = data_manager.get(amenity1.id, type(amenity1).__name__)
-    retrieved_city = data_manager.get(city1.id, type(city1).__name__)
-    retrieved_country = data_manager.get(country1.id, type(country1).__name__)
+SWAGGER_URL = '/api/docs'
+API_URL = '/swagger.yaml'
 
-    print("Retrieved User:", retrieved_user)
-    print("Retrieved Place:", retrieved_place)
-    print("Retrieved Review:", retrieved_review)
-    print("Retrieved Amenity:", retrieved_amenity)
-    print("Retrieved City:", retrieved_city)
-    print("Retrieved Country:", retrieved_country)
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "API Documentation"
+    }
+)
 
-    # Update entity
-    user1.last_name = "Smith"
-    data_manager.update(user1)
-    updated_user = data_manager.get(user1.id, type(user1).__name__)
-    print("Updated User:", updated_user)
+app.register_blueprint(amenity_bp)
+app.register_blueprint(city_bp)
+app.register_blueprint(country_bp)
+app.register_blueprint(place_bp)
+app.register_blueprint(review_bp)
+app.register_blueprint(user_bp)
+app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
-    # Delete entity
-    data_manager.delete(place1.id, type(place1).__name__)
-    deleted_place = data_manager.get(place1.id, type(place1).__name__)
-    print("Deleted Place:", deleted_place)
+
+@app.route('/')
+def home():
+    return 'HBnB Evolution: Part 1 (Model + API)'
+
+
+@app.route('/swagger.yaml')
+def serve_swagger():
+    return send_from_directory(os.getcwd(), 'swagger.yaml')
 
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True, host='0.0.0.0', port=port)
