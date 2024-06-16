@@ -30,7 +30,7 @@ Creating our very own web application, HBnB Evolution, modeled after AirBnB usin
 - City-Country Structure: A place belongs to a city, cities belong to countries, and a country can have multiple cities.
 
 ## Examples
-Tests examples :
+Tests example :
 ```
 ~/holbertonschool-hbnb$ python3 -m unittest discover -s app/tests/
 ....................
